@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>A testable blackjack core: cards, deck, hand values, and game rules. No console I/O.</Description>
+  </PropertyGroup>
+
+</Project>
