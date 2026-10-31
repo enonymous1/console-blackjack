@@ -4,10 +4,27 @@ namespace Blackjack;
 
 internal static class Program
 {
-    private static void Main()
+    private static int Main()
     {
-        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        try
+        {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            Run();
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            // Top-level boundary only: game logic throws specific
+            // exceptions (e.g. dealing from an empty deck); the player
+            // gets a readable message and a non-zero exit code, not a
+            // stack trace. The full trace is still available in a debugger.
+            Console.Error.WriteLine($"Error: {ex.Message}");
+            return 1;
+        }
+    }
 
+    private static void Run()
+    {
         string[] menu = ["1. Play Blackjack", "2. Shuffle and Show Deck", "3. Exit"];
         const string prompt = "\nChoice: ";
 
@@ -90,10 +107,13 @@ internal static class Program
 
     private static void ShowHands(BlackjackGame game, bool hideDealerCard)
     {
+        // Snapshot once: Hand.Cards copies the list on every access,
+        // so indexing it in a loop would allocate once per card.
+        IReadOnlyList<Card> dealerCards = game.Dealer.Cards;
         Console.Write("Dealer: ");
-        if (hideDealerCard && game.Dealer.Count > 1)
+        if (hideDealerCard && dealerCards.Count > 1)
         {
-            WriteCard(game.Dealer.Cards[0]);
+            WriteCard(dealerCards[0]);
             Console.Write(" ??");
         }
         else
@@ -113,10 +133,12 @@ internal static class Program
         var deck = new Deck();
         deck.Shuffle();
 
+        // Snapshot once: Deck.Cards copies the list on every access.
+        IReadOnlyList<Card> cards = deck.Cards;
         Console.WriteLine("\n 2. Shuffle and Show Deck");
-        for (int i = 0; i < deck.Cards.Count; i++)
+        for (int i = 0; i < cards.Count; i++)
         {
-            WriteCard(deck.Cards[i]);
+            WriteCard(cards[i]);
             Console.Write("  ");
             if ((i + 1) % 13 == 0)
             {
@@ -129,14 +151,16 @@ internal static class Program
 
     private static void WriteHand(Hand hand)
     {
-        for (int i = 0; i < hand.Cards.Count; i++)
+        // Snapshot once: Hand.Cards copies the list on every access.
+        IReadOnlyList<Card> cards = hand.Cards;
+        for (int i = 0; i < cards.Count; i++)
         {
             if (i > 0)
             {
                 Console.Write(" ");
             }
 
-            WriteCard(hand.Cards[i]);
+            WriteCard(cards[i]);
         }
     }
 

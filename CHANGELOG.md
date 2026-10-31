@@ -1,5 +1,35 @@
 # Changelog
 
+## 2.1.0 — 2026-10-31: staff-review P0 fixes and README rewrite
+
+Scope is deliberately narrow: only the P0 findings from the
+2026-10-31 review, plus the rewritten README. No architecture
+changes (no `GameRules`, no `IDeck`, no dealer strategy) — those
+remain future work for when a variant, a shoe, or a second UI is
+actually planned.
+
+- **Top-level error handling:** `Program.Main` now returns an exit
+  code and catches exceptions at the top level, printing a readable
+  message and returning 1 instead of crashing with a stack trace
+  (e.g. dealing from an exhausted deck). The menu loop moved into
+  a `Run()` method.
+- **Enum validation:** `Card.PipValue` and `Card.Rank` now throw
+  `ArgumentOutOfRangeException` for an unknown face instead of
+  silently scoring it at its numeric value (a cast such as
+  `(CardFace)99` previously scored 99 points). Two xUnit cases
+  cover this; the suite is now 36 cases.
+- **Cards snapshot:** `ShowDeck`, `WriteHand`, and `ShowHands`
+  snapshot `Cards` once instead of allocating a fresh array on
+  every access in a loop.
+- **README rewritten:** new sections for Description,
+  Prerequisites, Installation, Local Development, and Deployment,
+  with verified build/test/publish commands, a Mermaid
+  architecture diagram, and a Mermaid game-flow diagram. The
+  gameplay GIF and deck screenshot are not yet captured, so their
+  image lines are HTML-commented in the README (with the exact
+  filenames and placement) rather than linked as broken images —
+  capture them in Windows Terminal and uncomment.
+
 ## 2.0.0 — 2026-10-29: standalone modernization (squashed export)
 
 Renamed 2026-10-29 from `Blackjack` to `console-blackjack` (repo,

@@ -39,4 +39,20 @@ public class CardTests
         Assert.Equal(new Card(CardFace.Ace, CardSuit.Spades), new Card(CardFace.Ace, CardSuit.Spades));
         Assert.NotEqual(new Card(CardFace.Ace, CardSuit.Spades), new Card(CardFace.Ace, CardSuit.Hearts));
     }
+
+    [Fact]
+    public void PipValue_UnknownFace_ThrowsInsteadOfScoringItsNumericValue()
+    {
+        var card = new Card((CardFace)99, CardSuit.Spades);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => card.PipValue);
+    }
+
+    [Fact]
+    public void Rank_UnknownFace_Throws()
+    {
+        var card = new Card((CardFace)99, CardSuit.Spades);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => card.Rank);
+    }
 }
