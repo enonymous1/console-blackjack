@@ -44,9 +44,11 @@ git clone https://github.com/enonymous1/console-blackjack.git
 cd console-blackjack
 ```
 
-Or download a release zip and extract it, then `cd` into the
-extracted folder. There is no published package to install — this is
-a console application you build and run from source.
+Or download a release zip for your platform from the
+[Releases](https://github.com/enonymous1/console-blackjack/releases)
+page, extract it, and run `blackjack` (Windows: `blackjack.exe`).
+The release builds are self-contained, so no .NET SDK is needed to
+run them. There is no published package to install.
 
 ## Local Development
 
@@ -120,8 +122,17 @@ flowchart LR
 
 ## Deployment
 
-There is no installer and no release automation yet. Publish a
-standalone build from the repository root.
+There is no installer. Releases are automated: pushing a tag
+matching `v*.*.*` (for example `v2.1.0`) runs
+`.github/workflows/release.yml`, which runs the test suite, then
+publishes self-contained builds for win-x64, linux-x64, and
+osx-arm64 and attaches one zip per platform to a GitHub Release.
+Tags with a `-` suffix (for example `v2.2.0-rc1`) are marked as
+pre-releases. Tag pushes do not trigger CI (it runs on pushes to
+`main` and pull requests), so the release workflow runs the tests
+itself before publishing.
+
+To publish a standalone build by hand from the repository root:
 
 Framework-dependent (small, requires the .NET 10 runtime on the
 target machine):
@@ -142,10 +153,7 @@ dotnet publish src/Blackjack --configuration Release --runtime linux-x64 --self-
 dotnet publish src/Blackjack --configuration Release --runtime osx-arm64 --self-contained true
 ```
 
-To ship a release: tag a commit, publish the self-contained build
-for each platform, and attach the binaries to a GitHub Release.
-Adding a release workflow to `.github/workflows/` is the natural
-next step if releases become regular.
+
 
 ## How to play
 

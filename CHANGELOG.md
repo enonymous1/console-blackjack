@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- **Tag-triggered release workflow:**
+  `.github/workflows/release.yml` runs on tags matching `v*.*.*`.
+  It runs the test suite first (tag pushes do not trigger CI), then
+  publishes self-contained builds for win-x64, linux-x64, and
+  osx-arm64, zips one per platform, and attaches them to a GitHub
+  Release with generated notes. Tags with a `-` suffix are marked
+  as pre-releases. The README Deployment and Installation sections
+  now describe the automated releases instead of the manual-only
+  process. No version bump in this change: the first release cut
+  from this workflow will be tagged from the current code.
+
 ## 2.1.0 — 2026-10-31: staff-review P0 fixes and README rewrite
 
 Scope is deliberately narrow: only the P0 findings from the

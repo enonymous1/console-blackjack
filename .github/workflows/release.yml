@@ -1,0 +1,83 @@
+name: Release
+
+# Tag pushes do not trigger CI (it runs on pushes to main and pull
+# requests), so this workflow runs the test suite itself before
+# publishing anything. A failed test or a failed platform build
+# blocks the release: the release job needs every build job.
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Test
+        run: dotnet test console-blackjack.sln --configuration Release
+
+  build:
+    name: Publish (${{ matrix.rid }})
+    needs: test
+    strategy:
+      # One platform failing must not cancel the others, so the
+      # failure is visible per platform instead of hidden.
+      fail-fast: false
+      matrix:
+        include:
+          - rid: win-x64
+            os: windows-latest
+          - rid: linux-x64
+            os: ubuntu-latest
+          - rid: osx-arm64
+            os: macos-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Publish
+        run: dotnet publish src/Blackjack --configuration Release --runtime ${{ matrix.rid }} --self-contained true --output publish/${{ matrix.rid }}
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: blackjack-${{ matrix.rid }}
+          path: publish/${{ matrix.rid }}
+
+  release:
+    name: Create release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: blackjack-*
+          path: artifacts
+      - name: Zip artifacts
+        # Zipping happens here, on Ubuntu, so no platform-specific
+        # zip tool is needed in the build jobs. Each zip holds the
+        # publish output at its root (blackjack / blackjack.exe).
+        run: |
+          cd artifacts
+          for dir in blackjack-*; do
+            (cd "$dir" && zip -r "../../$dir.zip" .)
+          done
+          ls -l ../*.zip
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./*.zip
+          generate_release_notes: true
+          # Tags with a suffix (v2.2.0-rc1) are pre-releases.
+          prerelease: ${{ contains(github.ref_name, '-') }}
